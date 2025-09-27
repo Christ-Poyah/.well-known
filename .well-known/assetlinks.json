@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.poyah.ebooksapp",
+    "sha256_cert_fingerprints": [
+      "57:E5:72:81:F0:E3:6A:AB:ED:AC:31:D4:56:AF:13:26:EB:48:29:81:A7:91:FE:C6:76:9A:A4:21:D7:E6:CA:13"
+    ]
+  }
+}]
