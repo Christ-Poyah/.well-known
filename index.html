@@ -132,12 +132,35 @@
             await trackClick();
             await loadEbookData();
 
+            // Stocker les données d'attribution pour l'app mobile
+            storeAttributionData();
+
             if (should_deep_link === 'true') {
                 attemptDeepLink();
             }
 
             showMainContent();
         });
+
+        function storeAttributionData() {
+            // Stocker les données de campagne dans localStorage
+            // L'app mobile pourra les récupérer au premier lancement
+            if (campaign_id) {
+                const attributionData = {
+                    campaign_id: campaign_id,
+                    utm_source: utm_source,
+                    utm_medium: utm_medium,
+                    utm_campaign: utm_campaign,
+                    utm_content: utm_content,
+                    ebook_id: ebook_id,
+                    click_timestamp: new Date().toISOString(),
+                    referrer_url: document.referrer
+                };
+
+                localStorage.setItem('campaign_attribution', JSON.stringify(attributionData));
+                console.log('📊 Attribution data stored:', attributionData);
+            }
+        }
 
         async function trackClick() {
             try {
