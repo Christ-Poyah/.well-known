@@ -245,19 +245,32 @@
         }
 
         function attemptDeepLink() {
-            const deepLinkParams = new URLSearchParams();
-            if (utm_source) deepLinkParams.append('utm_source', utm_source);
-            if (utm_medium) deepLinkParams.append('utm_medium', utm_medium);
-            if (utm_campaign) deepLinkParams.append('utm_campaign', utm_campaign);
-            if (utm_content) deepLinkParams.append('utm_content', utm_content);
-            if (ebook_id) deepLinkParams.append('ebook_id', ebook_id);
-            if (campaign_id) deepLinkParams.append('campaign_id', campaign_id);
+            const deviceType = getDeviceType();
+            console.log('🔗 Attempting deep link - Device:', deviceType);
 
-            const deepLinkUrl = `ebooks://?${deepLinkParams.toString()}`;
+            // Seulement essayer le deep link sur mobile/tablet
+            if (deviceType === 'mobile' || deviceType === 'tablet') {
+                const deepLinkParams = new URLSearchParams();
+                if (utm_source) deepLinkParams.append('utm_source', utm_source);
+                if (utm_medium) deepLinkParams.append('utm_medium', utm_medium);
+                if (utm_campaign) deepLinkParams.append('utm_campaign', utm_campaign);
+                if (utm_content) deepLinkParams.append('utm_content', utm_content);
+                if (ebook_id) deepLinkParams.append('ebook_id', ebook_id);
+                if (campaign_id) deepLinkParams.append('campaign_id', campaign_id);
 
-            setTimeout(() => {
-                window.location.href = deepLinkUrl;
-            }, 100);
+                const deepLinkUrl = `ebooks://?${deepLinkParams.toString()}`;
+                console.log('🔗 Deep link URL:', deepLinkUrl);
+
+                setTimeout(() => {
+                    try {
+                        window.location.href = deepLinkUrl;
+                    } catch (error) {
+                        console.log('🔗 Deep link failed (app not installed):', error);
+                    }
+                }, 100);
+            } else {
+                console.log('🔗 Deep link skipped (desktop device)');
+            }
         }
 
         function handleDownloadClick() {
