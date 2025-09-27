@@ -141,7 +141,13 @@
 
         async function trackClick() {
             try {
+                console.log('🔍 Tracking attempt - campaign_id:', campaign_id);
+                console.log('🔍 User Agent:', navigator.userAgent);
+                console.log('🔍 Device type detected:', getDeviceType());
+
                 if (campaign_id && SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
+                    console.log('✅ Proceeding with tracking...');
+
                     // Track click in Supabase
                     const response = await fetch(`${SUPABASE_URL}/rest/v1/campaign_clicks`, {
                         method: 'POST',
@@ -153,15 +159,51 @@
                         body: JSON.stringify({
                             campaign_link_id: campaign_id,
                             user_agent: navigator.userAgent,
-                            referer_url: document.referrer,
-                            device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                            referer_url: document.referrer || '',
+                            device_type: getDeviceType(),
                             browser: getBrowserName(),
                             os: getOSName()
                         })
                     });
+
+                    if (response.ok) {
+                        console.log('✅ Click tracked successfully');
+                        // Increment campaign link counter
+                        await incrementCampaignCounter();
+                    } else {
+                        console.error('❌ Failed to track click:', response.status, await response.text());
+                    }
+                } else {
+                    console.log('❌ Tracking skipped - Missing campaign_id or invalid URL');
+                    console.log('   campaign_id:', campaign_id);
+                    console.log('   SUPABASE_URL:', SUPABASE_URL);
                 }
             } catch (error) {
-                console.error('Error tracking click:', error);
+                console.error('❌ Error tracking click:', error);
+            }
+        }
+
+        async function incrementCampaignCounter() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_campaign_clicks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        campaign_link_id: campaign_id
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Campaign counter incremented');
+                } else {
+                    console.error('❌ Failed to increment counter:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Error incrementing counter:', error);
             }
         }
 
@@ -244,22 +286,52 @@
             }
         }
 
+        function getDeviceType() {
+            const userAgent = navigator.userAgent.toLowerCase();
+
+            // Détection mobile améliorée
+            const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|kindle|silk|phone/i;
+
+            // Tests spécifiques pour iOS
+            const isIOS = /ipad|iphone|ipod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            // Tests spécifiques pour Android
+            const isAndroid = /android/.test(userAgent);
+
+            // Tests pour tablettes
+            const isTablet = /ipad|tablet|kindle|silk/.test(userAgent) || (isAndroid && !/mobile/.test(userAgent));
+
+            if (isIOS || isAndroid || mobileRegex.test(userAgent)) {
+                return isTablet ? 'tablet' : 'mobile';
+            }
+
+            return 'desktop';
+        }
+
         function getBrowserName() {
             const userAgent = navigator.userAgent;
-            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edge')) return 'Chrome';
             if (userAgent.includes('Firefox')) return 'Firefox';
-            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
             if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Opera')) return 'Opera';
             return 'Other';
         }
 
         function getOSName() {
             const userAgent = navigator.userAgent;
-            if (userAgent.includes('Windows')) return 'Windows';
-            if (userAgent.includes('Mac')) return 'macOS';
-            if (userAgent.includes('Linux')) return 'Linux';
+            const platform = navigator.platform;
+
+            // iOS détection améliorée
+            if (/iPad|iPhone|iPod/.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+                return 'iOS';
+            }
+
             if (userAgent.includes('Android')) return 'Android';
-            if (userAgent.includes('iOS')) return 'iOS';
+            if (userAgent.includes('Windows')) return 'Windows';
+            if (userAgent.includes('Mac') && !userAgent.includes('iPhone')) return 'macOS';
+            if (userAgent.includes('Linux')) return 'Linux';
+
             return 'Other';
         }
     </script>
