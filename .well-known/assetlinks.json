@@ -1,10 +1,15 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.poyah.ebooksapp",
-    "sha256_cert_fingerprints": [
-      "57:E5:72:81:F0:E3:6A:AB:ED:AC:31:D4:56:AF:13:26:EB:48:29:81:A7:91:FE:C6:76:9A:A4:21:D7:E6:CA:13"
-    ]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.poyah.ebooksapp",
+      "sha256_cert_fingerprints": [
+        "56:F2:70:AE:B3:17:01:49:19:3B:7C:35:7A:4A:93:98:33:9F:C5:CE:6A:7F:AE:0C:E9:20:5F:7B:D9:3B:84:FC"
+      ]
+    }
   }
-}]
+]
